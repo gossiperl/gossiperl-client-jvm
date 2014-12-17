@@ -7,4 +7,11 @@ public class State {
         DISCONNECTED
     }
 
+    private OverlayWorker worker;
+
+    public State(OverlayWorker worker) {
+        // TODO: implement
+        this.worker = worker;
+    }
+
 }

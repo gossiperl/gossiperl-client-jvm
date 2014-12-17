@@ -3,7 +3,7 @@ package com.gossiperl.client.config;
 /**
  * Created by rad on 16/12/14.
  */
-public class SupervisorConfiguration {
+public class OverlayConfiguration {
 
     private String overlayName;
     private String clientName;
@@ -11,6 +11,7 @@ public class SupervisorConfiguration {
     private String symmetricKey;
     private int overlayPort;
     private int clientPort;
+    private int thriftWindowSize = 16777216;
 
     public String getOverlayName() {
         return overlayName;
@@ -58,5 +59,13 @@ public class SupervisorConfiguration {
 
     public void setClientPort(int clientPort) {
         this.clientPort = clientPort;
+    }
+
+    public int getThriftWindowSize() {
+        return thriftWindowSize;
+    }
+
+    public void setThriftWindowSize(int thriftWindowSize) {
+        this.thriftWindowSize = thriftWindowSize;
     }
 }
