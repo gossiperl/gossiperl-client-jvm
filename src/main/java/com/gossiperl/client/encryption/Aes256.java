@@ -45,7 +45,7 @@ public class Aes256 {
         byte[] message = new byte[ data.length - 16 ];
         System.arraycopy(data, 0, ivBytes, 0, ivBytes.length);
         System.arraycopy(data, ivBytes.length, message, 0, message.length);
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
+        Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, this.key, new IvParameterSpec(ivBytes));
         return cipher.doFinal(message);
     }
