@@ -3,6 +3,7 @@ package com.gossiperl.client.serialization;
 import com.gossiperl.client.GossiperlClientException;
 import com.gossiperl.client.thrift.Digest;
 import com.gossiperl.client.thrift.DigestEnvelope;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -40,7 +41,7 @@ public class Serializer {
         }
         DigestEnvelope envelope = new DigestEnvelope();
         envelope.setPayload_type( digestType );
-        envelope.setBin_payload(new String(digestToBinary(digest) ) );
+        envelope.setBin_payload(Base64.encode(digestToBinary(digest)));
         envelope.setId(UUID.randomUUID().toString());
         return digestToBinary( envelope );
     }
@@ -50,7 +51,7 @@ public class Serializer {
         DigestEnvelope envelope = (DigestEnvelope)digestFromBinary( "digestEnvelope", binDigest );
         if ( this.types.containsKey(envelope.getPayload_type()) ) {
             try {
-                TBase digest = digestFromBinary(envelope.getPayload_type(), envelope.getBin_payload().getBytes());
+                TBase digest = digestFromBinary(envelope.getPayload_type(), Base64.decode(envelope.getBin_payload()));
                 return new DeserializeResultOK(envelope.getPayload_type(), digest);
             } catch (GossiperlClientException ex) {
                 return new DeserializeResultError(ex);
@@ -62,7 +63,7 @@ public class Serializer {
 
     public byte[] digestToBinary(org.apache.thrift.TBase digest) throws GossiperlClientException {
         try {
-            return (new TSerializer()).serialize( digest );
+            return (new TSerializer()).serialize(digest);
         } catch (TException ex) {
             throw new GossiperlClientException("Could not write Thrift digest.", ex);
         }

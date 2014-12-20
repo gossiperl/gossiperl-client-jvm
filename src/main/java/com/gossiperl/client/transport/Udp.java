@@ -18,6 +18,7 @@ import java.net.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 
 public class Udp implements Runnable {
@@ -63,9 +64,11 @@ public class Udp implements Runnable {
                     } catch (IllegalBlockSizeException ex) {
                         this.worker.getMessaging().receive(new DeserializeResultError( new GossiperlClientException("Decryption error. Illegal block size.", ex) ));
                     } catch (BadPaddingException ex) {
-                        this.worker.getMessaging().receive(new DeserializeResultError( new GossiperlClientException("Decryption error. Bad padding.", ex) ));
+                        this.worker.getMessaging().receive(new DeserializeResultError(new GossiperlClientException("Decryption error. Bad padding.", ex)));
+                    } catch (NoSuchProviderException ex) {
+                        this.worker.getMessaging().receive(new DeserializeResultError(new GossiperlClientException("Decryption error. Unsupported security provider.", ex)));
                     } catch (GossiperlClientException ex) {
-                        this.worker.getMessaging().receive(new DeserializeResultError( ex ));
+                        this.worker.getMessaging().receive(new DeserializeResultError(ex));
                     }
                 } catch (IOException ex) {
                     LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while receiving datagram. Reason: ", ex);
@@ -80,19 +83,7 @@ public class Udp implements Runnable {
         try {
             LOG.debug("[" + worker.getConfiguration().getClientName() + "] Attempting sending " + digest.getClass().getName() + " to 127.0.0.1:" + this.worker.getConfiguration().getOverlayPort() + ".");
             byte[] serialized = this.serializer.serialize(digest);
-            byte[] encrypted = new String(this.encryption.encrypt(serialized), "ISO-8859-1").getBytes();
-            LOG.debug("[" + worker.getConfiguration().getClientName() + "] Data encrypted, length is " + encrypted.length + ".");
-            
-            System.out.print("[");
-            for (int i=0; i<encrypted.length; i++) {
-                if (i > 0) {
-                    System.out.print( ", " + (encrypted[i] & 0xff));
-                } else {
-                    System.out.print((encrypted[i] & 0xff));
-                }
-            }
-            System.out.print("]\n");
-
+            byte[] encrypted = this.encryption.encrypt(serialized);
             DatagramPacket sendPacket = new DatagramPacket(encrypted,
                     encrypted.length,
                     InetAddress.getByName(IP_ADDRESS),

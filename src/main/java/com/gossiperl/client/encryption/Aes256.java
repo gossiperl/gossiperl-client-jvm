@@ -15,17 +15,17 @@ public class Aes256 {
     private static Logger LOG = Logger.getLogger(Aes256.class);
 
     public Aes256(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        Security.addProvider(new BouncyCastleProvider());
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] digestBytes = md.digest(key.getBytes());
+        byte[] digestBytes = md.digest(key.getBytes("utf-8"));
         this.key = new SecretKeySpec(digestBytes, "AES");
-        System.out.println("Key size: " + this.key.getEncoded().length);
     }
 
     public byte[] encrypt(byte[] data) throws NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
             IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
-        byte[] ivBytes = "mymymymymymymymy".getBytes();//generateIv();
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] ivBytes = generateIv();
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, this.key, new IvParameterSpec(ivBytes));
         try {
             byte[] encrypted = cipher.doFinal(data);
@@ -40,12 +40,12 @@ public class Aes256 {
 
     public byte[] decrypt(byte[] data) throws NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
+            IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
         byte[] ivBytes = new byte[16];
         byte[] message = new byte[ data.length - 16 ];
         System.arraycopy(data, 0, ivBytes, 0, ivBytes.length);
         System.arraycopy(data, ivBytes.length, message, 0, message.length);
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, this.key, new IvParameterSpec(ivBytes));
         return cipher.doFinal(message);
     }

@@ -68,8 +68,8 @@ public class State {
     private void sendDigest() {
         Digest digest = new Digest();
         digest.setSecret( this.worker.getConfiguration().getClientSecret() );
-        digest.setId("message_id"/*UUID.randomUUID().toString()*/);
-        digest.setHeartbeat(1/*Util.getTimestamp()*/);
+        digest.setId(UUID.randomUUID().toString());
+        digest.setHeartbeat(Util.getTimestamp());
         digest.setPort(this.worker.getConfiguration().getClientPort());
         digest.setName(this.worker.getConfiguration().getClientName());
         LOG.debug("[" + this.worker.getConfiguration().getClientName() + "] Offering digest " + digest.getId() + ".");

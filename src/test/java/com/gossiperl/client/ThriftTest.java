@@ -23,7 +23,7 @@ public class ThriftTest extends TestCase {
         this.digest.setPort(54321);
         this.digest.setHeartbeat( Util.getTimestamp() );
         this.digest.setSecret("test-serialize-secret");
-        this.encKey = "SomeEncryptionKe";
+        this.encKey = "v3JElaRswYgxOt4b";
     }
 
     public void tearDown() {
@@ -33,9 +33,9 @@ public class ThriftTest extends TestCase {
         Serializer serializer = new Serializer();
         byte[] envelope = serializer.serialize( this.digest );
 
-        //FileOutputStream out = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/zzz-thrift-data.thrift");
-        //out.write(envelope);
-        //out.close();
+        //FileOutputStream out1 = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/unencrypted-thrift-data.thrift");
+        //out1.write(envelope);
+        //out1.close();
 
         DeserializeResult deserializedResult = serializer.deserialize( envelope );
         assertEquals( DeserializeResultOK.class, deserializedResult.getClass() );
@@ -55,9 +55,9 @@ public class ThriftTest extends TestCase {
         // encrypt:
         byte[] encryptedEnvelope = aes.encrypt(envelope);
 
-        FileOutputStream out = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/zzz-thrift-data.thrift");
-        out.write(encryptedEnvelope);
-        out.close();
+        //FileOutputStream out2 = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/encrypted-thrift-data.thrift");
+        //out2.write(encryptedEnvelope);
+        //out2.close();
 
         // decrypt:
         byte[] decryptedEnvelope = aes.decrypt(encryptedEnvelope);
