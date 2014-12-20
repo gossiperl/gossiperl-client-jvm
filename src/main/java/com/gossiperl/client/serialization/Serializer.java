@@ -1,6 +1,7 @@
 package com.gossiperl.client.serialization;
 
 import com.gossiperl.client.GossiperlClientException;
+import com.gossiperl.client.thrift.Digest;
 import com.gossiperl.client.thrift.DigestEnvelope;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
@@ -39,7 +40,7 @@ public class Serializer {
         }
         DigestEnvelope envelope = new DigestEnvelope();
         envelope.setPayload_type( digestType );
-        envelope.setBin_payload( new String( digestToBinary( digest ) ) );
+        envelope.setBin_payload(new String(digestToBinary(digest) ) );
         envelope.setId(UUID.randomUUID().toString());
         return digestToBinary( envelope );
     }

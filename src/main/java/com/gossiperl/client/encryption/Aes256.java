@@ -1,34 +1,41 @@
 package com.gossiperl.client.encryption;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
 import java.security.*;
 
 public class Aes256 {
 
     private SecretKeySpec key;
+    private static Logger LOG = Logger.getLogger(Aes256.class);
 
-    public Aes256(String key) throws NoSuchAlgorithmException {
+    public Aes256(String key) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(key.getBytes());
-        this.key = new SecretKeySpec(md.digest(), "AES");
+        byte[] digestBytes = md.digest(key.getBytes());
+        this.key = new SecretKeySpec(digestBytes, "AES");
+        System.out.println("Key size: " + this.key.getEncoded().length);
     }
 
     public byte[] encrypt(byte[] data) throws NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
-        byte[] ivBytes = generateIv();
+            IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
+        byte[] ivBytes = "mymymymymymymymy".getBytes();//generateIv();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, this.key, new IvParameterSpec(ivBytes));
-        byte[] encrypted = cipher.doFinal(data);
-        byte[] complete = new byte[ ivBytes.length + encrypted.length ];
-        System.arraycopy(ivBytes, 0, complete, 0, ivBytes.length);
-        System.arraycopy(encrypted, 0, complete, ivBytes.length, encrypted.length);
-        return complete;
+        try {
+            byte[] encrypted = cipher.doFinal(data);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(ivBytes);
+            outputStream.write(encrypted);
+            return outputStream.toByteArray();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     public byte[] decrypt(byte[] data) throws NoSuchAlgorithmException,

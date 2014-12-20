@@ -12,6 +12,7 @@ public class OverlayConfiguration {
     private int overlayPort;
     private int clientPort;
     private int thriftWindowSize = 16777216;
+    private String log4jConfiguration = null;
 
     public String getOverlayName() {
         return overlayName;
@@ -68,4 +69,13 @@ public class OverlayConfiguration {
     public void setThriftWindowSize(int thriftWindowSize) {
         this.thriftWindowSize = thriftWindowSize;
     }
+
+    public String getLog4jConfiguration() {
+        return log4jConfiguration;
+    }
+
+    public void setLog4jConfiguration(String log4jConfiguration) {
+        this.log4jConfiguration = log4jConfiguration;
+    }
+
 }

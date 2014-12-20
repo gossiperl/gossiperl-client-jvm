@@ -8,11 +8,9 @@ import com.gossiperl.client.thrift.Digest;
 import junit.framework.TestCase;
 import org.apache.thrift.TBase;
 
+import java.io.FileOutputStream;
 import java.util.UUID;
 
-/**
- * Created by rad on 17/12/14.
- */
 public class ThriftTest extends TestCase {
 
     private Digest digest;
@@ -34,6 +32,11 @@ public class ThriftTest extends TestCase {
     public void testSerializeDeserialize() throws Exception {
         Serializer serializer = new Serializer();
         byte[] envelope = serializer.serialize( this.digest );
+
+        //FileOutputStream out = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/zzz-thrift-data.thrift");
+        //out.write(envelope);
+        //out.close();
+
         DeserializeResult deserializedResult = serializer.deserialize( envelope );
         assertEquals( DeserializeResultOK.class, deserializedResult.getClass() );
         DeserializeResultOK resultOk = (DeserializeResultOK)deserializedResult;
@@ -51,6 +54,11 @@ public class ThriftTest extends TestCase {
         byte[] envelope = serializer.serialize( this.digest );
         // encrypt:
         byte[] encryptedEnvelope = aes.encrypt(envelope);
+
+        FileOutputStream out = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/zzz-thrift-data.thrift");
+        out.write(encryptedEnvelope);
+        out.close();
+
         // decrypt:
         byte[] decryptedEnvelope = aes.decrypt(encryptedEnvelope);
         // deserialize:
