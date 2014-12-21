@@ -27,7 +27,12 @@ The build is placed in the `target` directory. Two files are available:
 
 ## Connecting to an overlay
 
-    OverlayConfiguration configuration = new OverlayConfiguration();     configuration.setClientName("jvm-client");     configuration.setClientPort(54321);     configuration.setClientSecret("jvm-client-secret");     configuration.setSymmetricKey("v3JElaRswYgxOt4b");     configuration.setOverlayName("gossiper_overlay_remote");     configuration.setOverlayPort(6666);
+    OverlayConfiguration configuration = new OverlayConfiguration();     configuration.setClientName("jvm-client");
+    configuration.setClientPort(54321);
+    configuration.setClientSecret("jvm-client-secret");
+    configuration.setSymmetricKey("v3JElaRswYgxOt4b");
+    configuration.setOverlayName("gossiper_overlay_remote");
+    configuration.setOverlayPort(6666);
     supervisor.connect( configuration );
 
 And with a custom listener:
