@@ -1,6 +1,7 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.listener.DefaultGossiperlClientListener;
 import com.gossiperl.client.listener.GossiperlClientListener;
 import com.gossiperl.client.serialization.CustomDigestField;
@@ -86,9 +87,9 @@ public class Supervisor {
         }
     }
 
-    public void send(String overlayName, HashMap<String, CustomDigestField> digestData) throws GossiperlClientException {
+    public void send(String overlayName, String digestType, List<CustomDigestField> digestData) throws GossiperlClientException {
         if (isConnection(overlayName)) {
-            this.connections.get(overlayName).send(digestData);
+            this.connections.get(overlayName).send(digestType, digestData);
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
             throw new GossiperlClientException("[supervisor] No overlay connection: " + overlayName);

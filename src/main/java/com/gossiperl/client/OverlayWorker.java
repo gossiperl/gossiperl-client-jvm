@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 
 public class OverlayWorker {
 
@@ -56,8 +57,8 @@ public class OverlayWorker {
         }
     }
 
-    public void send(HashMap<String, CustomDigestField> digestData) {
-        messaging.send( digestData );
+    public void send(String digestType, List<CustomDigestField> digestData) {
+        messaging.send( digestType, digestData );
     }
 
     public State getState() {

@@ -1,15 +1,23 @@
 package com.gossiperl.client.serialization;
 
+import com.gossiperl.client.exceptions.GossiperlUnsupportedSerializableTypeException;
+
 public class CustomDigestField {
 
     private String fieldName;
     private Object value;
-    private int fieldId;
+    private String type;
+    private short fieldOrder;
 
-    public CustomDigestField(String fieldName, Object value, int fieldId) {
+    public CustomDigestField(String fieldName, Object value, String type, short fieldOrder)
+            throws GossiperlUnsupportedSerializableTypeException {
+        if ( !Serializer.isSerializableType(type) ) {
+            throw new GossiperlUnsupportedSerializableTypeException(type);
+        }
         this.fieldName = fieldName;
-        this.fieldId = fieldId;
         this.value = value;
+        this.type = type;
+        this.fieldOrder = fieldOrder;
     }
 
     public String getFieldName() {
@@ -20,7 +28,12 @@ public class CustomDigestField {
         return value;
     }
 
-    public int getFieldId() {
-        return fieldId;
+    public String getType() {
+        return type;
     }
+
+    public short getFieldOrder() {
+        return fieldOrder;
+    }
+
 }

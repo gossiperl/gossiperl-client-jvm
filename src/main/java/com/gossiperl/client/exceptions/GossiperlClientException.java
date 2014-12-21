@@ -1,4 +1,4 @@
-package com.gossiperl.client;
+package com.gossiperl.client.exceptions;
 
 public class GossiperlClientException extends Exception {
     public GossiperlClientException() {}

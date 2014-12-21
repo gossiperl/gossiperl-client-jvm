@@ -1,6 +1,6 @@
 package com.gossiperl.client.listener;
 
-import com.gossiperl.client.GossiperlClientException;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.OverlayWorker;
 import org.apache.thrift.TBase;
 

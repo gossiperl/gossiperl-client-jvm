@@ -1,6 +1,6 @@
 package com.gossiperl.client.transport;
 
-import com.gossiperl.client.GossiperlClientException;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.OverlayWorker;
 import com.gossiperl.client.encryption.Aes256;
 import com.gossiperl.client.serialization.CustomDigestField;
@@ -9,6 +9,7 @@ import com.gossiperl.client.serialization.DeserializeResultError;
 import com.gossiperl.client.serialization.Serializer;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -21,7 +22,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 
 public class Udp implements Runnable {
 
@@ -76,14 +77,21 @@ public class Udp implements Runnable {
                     LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while receiving datagram. Reason: ", ex);
                 }
             }
+            this.socket.close();
         } catch (SocketException ex) {
             LOG.error("[" + worker.getConfiguration().getClientName() + "] Could not bind client socket on port" + worker.getConfiguration().getClientPort() + ". Reason: ", ex);
         }
     }
 
-    public void send(HashMap<String, CustomDigestField> digestData) {
-        TBase envelope = this.serializer.serializeArbitrary( digestData );
-        this.send( envelope );
+    public void send(String digestType, List<CustomDigestField> digestData) {
+        try {
+            TBase envelope = this.serializer.serializeArbitrary(digestType, digestData);
+            this.send(envelope);
+        } catch (TException ex) {
+            worker.getListener().failed(worker, new GossiperlClientException("Error while serializing custom digest.", ex));
+        } catch (GossiperlClientException ex) {
+            worker.getListener().failed(worker, ex);
+        }
     }
 
     public void send(TBase digest) {

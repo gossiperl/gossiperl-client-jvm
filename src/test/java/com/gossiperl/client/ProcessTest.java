@@ -1,11 +1,10 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.UUID;
 
 public class ProcessTest extends TestCase {
 

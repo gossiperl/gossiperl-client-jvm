@@ -1,6 +1,6 @@
 package com.gossiperl.client.serialization;
 
-import com.gossiperl.client.GossiperlClientException;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 
 public class DeserializeResultError extends DeserializeResult {
     private GossiperlClientException cause;
