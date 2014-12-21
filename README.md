@@ -16,7 +16,7 @@ If you don’t have an installation of `gossiperl` running on the box where the 
 
 The build is placed in the `target` directory. Two files are available:
 
-- `gossieperl_client.jar`: client without dependencies
+- `gossiperl_client.jar`: client without dependencies
 - `gossiperl-client-<version>-jar-with-dependencies.jar`: uber jar, client with all dependencies
 
 ## Running
@@ -27,7 +27,8 @@ The build is placed in the `target` directory. Two files are available:
 
 ## Connecting to an overlay
 
-    OverlayConfiguration configuration = new OverlayConfiguration();     configuration.setClientName("jvm-client");
+    OverlayConfiguration configuration = new OverlayConfiguration();
+    configuration.setClientName("jvm-client");
     configuration.setClientPort(54321);
     configuration.setClientSecret("jvm-client-secret");
     configuration.setSymmetricKey("v3JElaRswYgxOt4b");
