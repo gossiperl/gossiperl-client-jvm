@@ -5,6 +5,8 @@ import com.gossiperl.client.OverlayWorker;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
 
+import java.util.List;
+
 public class DefaultGossiperlClientListener implements GossiperlClientListener {
 
     private static Logger LOG = Logger.getLogger(DefaultGossiperlClientListener.class);
@@ -21,24 +23,24 @@ public class DefaultGossiperlClientListener implements GossiperlClientListener {
         LOG.info("[" + worker.getConfiguration().getClientName() + "] Received member " + member.toString() + " event " + eventType + " at " + heartbeat + ".");
     }
 
-    public void subscribeAck( OverlayWorker worker, String[] eventTypes ) {
+    public void subscribeAck( OverlayWorker worker, List<String> eventTypes ) {
         StringBuilder sb = new StringBuilder();
-        for (int i=0; i<eventTypes.length; i++) {
+        for (int i=0; i<eventTypes.size(); i++) {
             if (i > 0) {
                 sb.append( ", " );
             }
-            sb.append(eventTypes[i]);
+            sb.append(eventTypes.get(i));
         }
         LOG.info("[" + worker.getConfiguration().getClientName() + "] Subscribed to " + sb.toString() + ".");
     }
 
-    public void unsubscribeAck( OverlayWorker worker, String[] eventTypes ) {
+    public void unsubscribeAck( OverlayWorker worker, List<String> eventTypes ) {
         StringBuilder sb = new StringBuilder();
-        for (int i=0; i<eventTypes.length; i++) {
+        for (int i=0; i<eventTypes.size(); i++) {
             if (i > 0) {
                 sb.append( ", " );
             }
-            sb.append(eventTypes[i]);
+            sb.append(eventTypes.get(i));
         }
         LOG.info("[" + worker.getConfiguration().getClientName() + "] Unsubscribed from " + sb.toString() + ".");
     }

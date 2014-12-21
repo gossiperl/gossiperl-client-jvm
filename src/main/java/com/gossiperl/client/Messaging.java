@@ -1,9 +1,7 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.serialization.*;
-import com.gossiperl.client.thrift.Digest;
-import com.gossiperl.client.thrift.DigestAck;
-import com.gossiperl.client.thrift.DigestMember;
+import com.gossiperl.client.thrift.*;
 import com.gossiperl.client.transport.Udp;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
@@ -12,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Messaging {
@@ -62,6 +61,46 @@ public class Messaging {
             outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digestAck));
         } catch (GossiperlClientException ex) {
             LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestAck. Reason: ", ex);
+        }
+    }
+
+    public void digestForwardedAck( String digestId ) {
+        DigestForwardedAck ack = new DigestForwardedAck();
+        ack.setReply_id( digestId );
+        ack.setName( this.worker.getConfiguration().getClientName() );
+        ack.setSecret(this.worker.getConfiguration().getClientSecret());
+        try {
+            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, ack));
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestForwardedAck. Reason: ", ex);
+        }
+    }
+
+    public void subscribe( List<String> events ) {
+        DigestSubscribe digest = new DigestSubscribe();
+        digest.setName(this.worker.getConfiguration().getClientName());
+        digest.setSecret(this.worker.getConfiguration().getClientSecret());
+        digest.setHeartbeat(Util.getTimestamp());
+        digest.setId(UUID.randomUUID().toString());
+        digest.setEvent_types( events );
+        try {
+            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digest));
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestSubscribe. Reason: ", ex);
+        }
+    }
+
+    public void unsubscribe( List<String> events ) {
+        DigestUnsubscribe digest = new DigestUnsubscribe();
+        digest.setName(this.worker.getConfiguration().getClientName());
+        digest.setSecret(this.worker.getConfiguration().getClientSecret());
+        digest.setHeartbeat(Util.getTimestamp());
+        digest.setId(UUID.randomUUID().toString());
+        digest.setEvent_types( events );
+        try {
+            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digest));
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestUnsubscribe. Reason: ", ex);
         }
     }
 
@@ -136,23 +175,27 @@ public class Messaging {
                         } else if (digestType.equals(Serializer.DIGEST_ACK)) {
                             worker.getState().receive( (DigestAck)((DeserializeResultOK)result).getDigest() );
                         } else if (digestType.equals(Serializer.DIGEST_EVENT)) {
-                            // TODO: handle notification
+                            DigestEvent event = (DigestEvent)((DeserializeResultOK)result).getDigest();
+                            worker.getListener().event( worker, event.getEvent_type(), event.getEvent_object(), event.getHeartbeat() );
                         } else if (digestType.equals(Serializer.DIGEST_SUBSCRIBE_ACK)) {
-                            // TODO: handle notification
+                            DigestSubscribeAck event = (DigestSubscribeAck)((DeserializeResultOK)result).getDigest();
+                            worker.getListener().subscribeAck(worker, event.getEvent_types());
                         } else if (digestType.equals(Serializer.DIGEST_UNSUBSCRIBE_ACK)) {
-                            // TODO: handle notification
+                            DigestUnsubscribeAck event = (DigestUnsubscribeAck)((DeserializeResultOK)result).getDigest();
+                            worker.getListener().unsubscribeAck(worker, event.getEvent_types());
                         } else if (digestType.equals(Serializer.DIGEST_FORWARDED_ACK)) {
-                            // TODO: handle notification
+                            DigestForwardedAck event = (DigestForwardedAck)((DeserializeResultOK)result).getDigest();
+                            worker.getListener().forwardAck(worker, event.getReply_id());
                         } else {
-                            // TODO: handle error
+                            worker.getListener().failed(worker, new GossiperlClientException("Unknown digest type " + ((DeserializeResultOK)result).getDigestType() ));
                         }
 
                     } else if ( result instanceof DeserializeResultError ) {
-                        // TODO: handle incoming error
-
-                        LOG.info("Incoming digest can't be deserialized" + ((DeserializeResultError)result).getCause());
+                        worker.getListener().failed(worker, ((DeserializeResultError) result).getCause());
                     } else if ( result instanceof DeserializeResultForward ) {
-                        // TODO: handle forward message
+                        DeserializeResultForward event = (DeserializeResultForward)result;
+                        worker.getListener().forwarded( worker, event.getDigestType(), event.getDigest() );
+                        digestForwardedAck(event.getEnvelopeId());
                     } else if (result instanceof DeserializeKillPill) {
                         LOG.info("[" + worker.getConfiguration().getClientName() + "] Received request to stop incoming queue processing. Stopping.");
                         break;

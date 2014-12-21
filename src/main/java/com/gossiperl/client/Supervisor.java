@@ -10,7 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 public class Supervisor {
@@ -65,7 +67,7 @@ public class Supervisor {
         }
     }
 
-    public String[] subscribe(String overlayName, String[] events) throws GossiperlClientException {
+    public List<String> subscribe(String overlayName, List<String> events) throws GossiperlClientException {
         if (this.connections.containsKey(overlayName)) {
             return this.connections.get(overlayName).getState().subscribe( events );
         } else {
@@ -74,7 +76,7 @@ public class Supervisor {
         }
     }
 
-    public String[] unsubscribe(String overlayName, String[] events) throws GossiperlClientException {
+    public List<String> unsubscribe(String overlayName, List<String> events) throws GossiperlClientException {
         if (this.connections.containsKey(overlayName)) {
             return this.connections.get(overlayName).getState().unsubscribe(events);
         } else {

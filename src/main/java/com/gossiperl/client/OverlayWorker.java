@@ -59,6 +59,10 @@ public class OverlayWorker {
         return this.messaging;
     }
 
+    public GossiperlClientListener getListener() {
+        return this.listener;
+    }
+
     class OverlayWorkerTask implements Runnable {
         public void run() {
             messaging.start();

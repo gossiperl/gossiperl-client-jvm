@@ -3,13 +3,15 @@ package com.gossiperl.client;
 import com.gossiperl.client.config.OverlayConfiguration;
 import junit.framework.TestCase;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 public class ProcessTest extends TestCase {
 
     private Supervisor supervisor;
     private OverlayConfiguration config;
-    private String[] subscriptions;
+    private ArrayList<String> subscriptions;
 
     public void setUp() {
         this.supervisor = new Supervisor();
@@ -20,18 +22,32 @@ public class ProcessTest extends TestCase {
         this.config.setSymmetricKey("v3JElaRswYgxOt4b");
         this.config.setOverlayName("gossiper_overlay_remote");
         this.config.setOverlayPort(6666);
-        this.subscriptions = new String[2];
-        this.subscriptions[0] = "member_in";
-        this.subscriptions[1] = "digestForwardableTest";
+        this.subscriptions = new ArrayList<String>();
+        this.subscriptions.add( "member_in" );
+        this.subscriptions.add( "digestForwardableTest" );
     }
 
     public void tearDown() {
     }
 
     public void testProcess() throws Exception {
+        // connect
         this.supervisor.connect( this.config );
-        assertTrue( this.supervisor.getCurrentState( this.config.getOverlayName() ).equals( State.Status.DISCONNECTED ) );
-        // TODO: implement
+        Thread.sleep(3000);
+        assertTrue( this.supervisor.getCurrentState( this.config.getOverlayName() ).equals( State.Status.CONNECTED ) );
+        // duplicate overlay
+        boolean duplicateErrorThrown = false;
+        try {
+            this.supervisor.connect(this.config);
+        } catch (GossiperlClientException ex) {
+            duplicateErrorThrown = true;
+        }
+        assertTrue( duplicateErrorThrown );
+        // subscribe
+        assertTrue(this.supervisor.subscribe(this.config.getOverlayName(), this.subscriptions).equals( this.subscriptions ));
+        Thread.sleep(3000);
+        // unsubscribe
+        assertTrue(this.supervisor.unsubscribe(this.config.getOverlayName(), this.subscriptions).equals(new ArrayList<String>()));
     }
 
     public void testNonExistingOverlay() throws Exception {
