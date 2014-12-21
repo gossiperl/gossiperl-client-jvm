@@ -18,25 +18,39 @@ public class Serializer {
 
     private HashMap<String, Class> types = new HashMap<String, Class>();
 
+    public static final String DIGEST_ERROR = "digestError";
+    public static final String DIGEST_FORWARDED_ACK = "digestForwardedAck";
+    public static final String DIGEST_ENVELOPE = "digestEnvelope";
+    public static final String DIGEST = "digest";
+    public static final String DIGEST_ACK = "digestAck";
+    public static final String DIGEST_SUBSCRIPTIONS = "digestSubscriptions";
+    public static final String DIGEST_EXIT = "digestExit";
+    public static final String DIGEST_SUBSCRIBE = "digestSubscribe";
+    public static final String DIGEST_SUBSCRIBE_ACK = "digestSubscribeAck";
+    public static final String DIGEST_UNSUBSCRIBE = "digestUnsubscribe";
+    public static final String DIGEST_UNSUBSCRIBE_ACK = "digestUnsubscribeAck";
+    public static final String DIGEST_EVENT = "digestEvent";
+
+
     public Serializer() {
-        this.types.put("digestError", com.gossiperl.client.thrift.DigestError.class);
-        this.types.put("digestForwardedAck", com.gossiperl.client.thrift.DigestForwardedAck.class);
-        this.types.put("digestEnvelope", com.gossiperl.client.thrift.DigestEnvelope.class);
-        this.types.put("digest", com.gossiperl.client.thrift.Digest.class);
-        this.types.put("digestAck", com.gossiperl.client.thrift.DigestAck.class);
-        this.types.put("digestSubscriptions", com.gossiperl.client.thrift.DigestSubscriptions.class);
-        this.types.put("digestExit", com.gossiperl.client.thrift.DigestExit.class);
-        this.types.put("digestSubscribe", com.gossiperl.client.thrift.DigestSubscribe.class);
-        this.types.put("digestSubscribeAck", com.gossiperl.client.thrift.DigestSubscribeAck.class);
-        this.types.put("digestUnsubscribe", com.gossiperl.client.thrift.DigestUnsubscribe.class);
-        this.types.put("digestUnsubscribeAck", com.gossiperl.client.thrift.DigestUnsubscribeAck.class);
-        this.types.put("digestEvent", com.gossiperl.client.thrift.DigestEvent.class);
+        this.types.put(DIGEST_ERROR, com.gossiperl.client.thrift.DigestError.class);
+        this.types.put(DIGEST_FORWARDED_ACK, com.gossiperl.client.thrift.DigestForwardedAck.class);
+        this.types.put(DIGEST_ENVELOPE, com.gossiperl.client.thrift.DigestEnvelope.class);
+        this.types.put(DIGEST, com.gossiperl.client.thrift.Digest.class);
+        this.types.put(DIGEST_ACK, com.gossiperl.client.thrift.DigestAck.class);
+        this.types.put(DIGEST_SUBSCRIPTIONS, com.gossiperl.client.thrift.DigestSubscriptions.class);
+        this.types.put(DIGEST_EXIT, com.gossiperl.client.thrift.DigestExit.class);
+        this.types.put(DIGEST_SUBSCRIBE, com.gossiperl.client.thrift.DigestSubscribe.class);
+        this.types.put(DIGEST_SUBSCRIBE_ACK, com.gossiperl.client.thrift.DigestSubscribeAck.class);
+        this.types.put(DIGEST_UNSUBSCRIBE, com.gossiperl.client.thrift.DigestUnsubscribe.class);
+        this.types.put(DIGEST_UNSUBSCRIBE_ACK, com.gossiperl.client.thrift.DigestUnsubscribeAck.class);
+        this.types.put(DIGEST_EVENT, com.gossiperl.client.thrift.DigestEvent.class);
     }
 
     public byte[] serialize(org.apache.thrift.TBase digest) throws GossiperlClientException,
             UnsupportedEncodingException {
         String digestType = this.getDigestName( digest );
-        if ( digestType.equals("digestEnvelope") ) {
+        if ( digestType.equals(DIGEST_ENVELOPE) ) {
             return digestToBinary( digest );
         }
         DigestEnvelope envelope = new DigestEnvelope();
@@ -48,7 +62,7 @@ public class Serializer {
 
     public DeserializeResult deserialize(byte[] binDigest) throws GossiperlClientException,
             UnsupportedEncodingException {
-        DigestEnvelope envelope = (DigestEnvelope)digestFromBinary( "digestEnvelope", binDigest );
+        DigestEnvelope envelope = (DigestEnvelope)digestFromBinary( DIGEST_ENVELOPE, binDigest );
         if ( this.types.containsKey(envelope.getPayload_type()) ) {
             try {
                 TBase digest = digestFromBinary(envelope.getPayload_type(), Base64.decode(envelope.getBin_payload()));

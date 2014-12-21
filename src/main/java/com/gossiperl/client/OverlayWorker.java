@@ -1,6 +1,7 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
+import com.gossiperl.client.listener.GossiperlClientListener;
 import org.apache.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
@@ -13,15 +14,17 @@ public class OverlayWorker {
     private Messaging messaging;
     private State state;
     private boolean working;
+    private GossiperlClientListener listener;
 
     private static Logger LOG = Logger.getLogger(OverlayWorker.class);
 
-    public OverlayWorker(Supervisor supervisor, OverlayConfiguration configuration) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public OverlayWorker(Supervisor supervisor, OverlayConfiguration configuration, GossiperlClientListener listener) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         this.supervisor = supervisor;
         this.configuration = configuration;
         this.messaging = new Messaging(this);
         this.state = new State(this);
         this.working = true;
+        this.listener = listener;
         LOG.info("[" + this.configuration.getClientName() + "] Overlay worker initialized.");
     }
 

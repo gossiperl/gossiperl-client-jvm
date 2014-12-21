@@ -1,6 +1,8 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
+import com.gossiperl.client.listener.DefaultGossiperlClientListener;
+import com.gossiperl.client.listener.GossiperlClientListener;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -29,8 +31,8 @@ public class Supervisor {
                 System.exit(100);
             }
         } else {
-            String log4j_config = new File( log4jProperties ).getAbsolutePath();
-            PropertyConfigurator.configureAndWatch(log4jProperties, 10 * 1000);
+            String log4jConfigPath = new File( log4jProperties ).getAbsolutePath();
+            PropertyConfigurator.configureAndWatch(log4jConfigPath, 10 * 1000);
         }
         this.log = Logger.getLogger( Supervisor.class );
     }
@@ -39,26 +41,18 @@ public class Supervisor {
         this(null);
     }
 
-    public void connect(OverlayConfiguration config) throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {
+    public void connect(OverlayConfiguration config, GossiperlClientListener listener) throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {
         if (this.connections.containsKey(config.getOverlayName())) {
             this.log.error("Client for " + config.getOverlayName() + " already present.");
             throw new GossiperlClientException("Client for " + config.getOverlayName() + " already present.");
         }
-        OverlayWorker worker = new OverlayWorker(this, config);
+        OverlayWorker worker = new OverlayWorker(this, config, listener);
         this.connections.put( config.getOverlayName(), worker );
         worker.start();
     }
 
-    public void connect(String overlayName, int overlayPort, int clientPort, String clientName, String clientSecret, String symmetricKey)
-            throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {
-        OverlayConfiguration cfg = new OverlayConfiguration();
-        cfg.setOverlayName(overlayName);
-        cfg.setOverlayPort(overlayPort);
-        cfg.setClientPort(clientPort);
-        cfg.setClientName(clientName);
-        cfg.setClientSecret(clientSecret);
-        cfg.setSymmetricKey(symmetricKey);
-        this.connect( cfg );
+    public void connect(OverlayConfiguration config) throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {
+        this.connect(config, new DefaultGossiperlClientListener());
     }
 
     public void disconnect(String overlayName) throws GossiperlClientException {

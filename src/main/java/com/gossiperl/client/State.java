@@ -17,7 +17,7 @@ public class State {
     private OverlayWorker worker;
     private ArrayList<String> subscriptions;
     private Status currentStatus;
-    private int lastTs;
+    private long lastTs;
 
     private static Logger LOG = Logger.getLogger(State.class);
 
@@ -29,7 +29,13 @@ public class State {
     }
 
     public void receive(DigestAck digestAck) {
-        // TODO: implement
+        if ( this.currentStatus == Status.DISCONNECTED ) {
+            LOG.debug("[" + this.worker.getConfiguration().getClientName() + "] Announcing connected.");
+            // TODO: implement connected notification
+            // TODO: implement subscribe
+        }
+        this.currentStatus = Status.CONNECTED;
+        this.lastTs = digestAck.getHeartbeat();
     }
 
     public void start() {
@@ -43,7 +49,7 @@ public class State {
             toAdd.add(events[i]);
         }
         this.subscriptions.addAll( toAdd );
-        // TODO: implement
+        // TODO: implement subscribe
         return events;
     }
 
@@ -53,7 +59,7 @@ public class State {
             toRemove.add(events[i]);
         }
         this.subscriptions.removeAll( toRemove );
-        // TODO: implement
+        // TODO: implement unsubscribe
         return events;
     }
 
@@ -82,7 +88,11 @@ public class State {
                 Thread.sleep(1000);
                 while (worker.isWorking()) {
                     sendDigest();
-                    // TODO: implement
+                    if ( Util.getTimestamp() - lastTs > 5f ) {
+                        LOG.debug("[" + worker.getConfiguration().getClientName() + "] Announcing disconnected.");
+                        // TODO: announce disconnected
+                        currentStatus = Status.DISCONNECTED;
+                    }
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException ex) {
@@ -90,6 +100,10 @@ public class State {
                         break;
                     }
                 }
+                LOG.debug("[" + worker.getConfiguration().getClientName() + "] Announcing disconnected. Worker stopped.");
+                // TODO: announce disconnected
+                currentStatus = Status.DISCONNECTED;
+                LOG.info("[" + worker.getConfiguration().getClientName() + "] Stopping state service.");
             } catch (InterruptedException ex) {
                 LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while starting state worker. Reason: ", ex);
             }

@@ -1,12 +1,17 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.serialization.*;
+import com.gossiperl.client.thrift.Digest;
+import com.gossiperl.client.thrift.DigestAck;
+import com.gossiperl.client.thrift.DigestMember;
 import com.gossiperl.client.transport.Udp;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Messaging {
@@ -45,6 +50,19 @@ public class Messaging {
             LOG.warn("[" + this.worker.getConfiguration().getClientName() + "] Received an unexpected exception while announcing outgoing queue kill pill.");
         }
         this.incomingQueue.offer(new DeserializeKillPill());
+    }
+
+    public void digestAck(Digest digest) {
+        DigestAck digestAck = new DigestAck();
+        digestAck.setName( this.worker.getConfiguration().getClientName() );
+        digestAck.setHeartbeat( Util.getTimestamp() );
+        digestAck.setReply_id( digest.getId() );
+        digestAck.setMembership(new ArrayList<DigestMember>());
+        try {
+            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digestAck));
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestAck. Reason: ", ex);
+        }
     }
 
     public void receive(DeserializeResult incoming) {
@@ -111,10 +129,28 @@ public class Messaging {
                 try {
                     DeserializeResult result = incomingQueue.take();
                     if (result instanceof DeserializeResultOK) {
-                        // TODO: process incoming digest
-                        LOG.info("Received an incoming digest " + ((DeserializeResultOK)result).getDigest().getClass().getName());
+
+                        String digestType = ((DeserializeResultOK)result).getDigestType();
+                        if (digestType.equals(Serializer.DIGEST)) {
+                            digestAck( (Digest)((DeserializeResultOK)result).getDigest() );
+                        } else if (digestType.equals(Serializer.DIGEST_ACK)) {
+                            worker.getState().receive( (DigestAck)((DeserializeResultOK)result).getDigest() );
+                        } else if (digestType.equals(Serializer.DIGEST_EVENT)) {
+                            // TODO: handle notification
+                        } else if (digestType.equals(Serializer.DIGEST_SUBSCRIBE_ACK)) {
+                            // TODO: handle notification
+                        } else if (digestType.equals(Serializer.DIGEST_UNSUBSCRIBE_ACK)) {
+                            // TODO: handle notification
+                        } else if (digestType.equals(Serializer.DIGEST_FORWARDED_ACK)) {
+                            // TODO: handle notification
+                        } else {
+                            // TODO: handle error
+                        }
+
                     } else if ( result instanceof DeserializeResultError ) {
                         // TODO: handle incoming error
+
+                        LOG.info("Incoming digest can't be deserialized" + ((DeserializeResultError)result).getCause());
                     } else if ( result instanceof DeserializeResultForward ) {
                         // TODO: handle forward message
                     } else if (result instanceof DeserializeKillPill) {
@@ -123,7 +159,7 @@ public class Messaging {
                     } else {
                         LOG.error("[" + worker.getConfiguration().getClientName() + "] Skipping unknown incoming message: " + result.getClass().getName() );
                     }
-                }catch (InterruptedException ex) {
+                } catch (InterruptedException ex) {
                     LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while loading data from the incoming queue. Worker will stop. Reason: ", ex);
                     break;
                 }
