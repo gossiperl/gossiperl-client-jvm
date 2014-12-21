@@ -33,7 +33,7 @@ public class State {
         if ( this.currentStatus == Status.DISCONNECTED ) {
             this.worker.getListener().connected( this.worker );
             if ( this.subscriptions.size() > 0 ) {
-                this.worker.getMessaging().subscribe(this.subscriptions);
+                this.worker.getMessaging().digestSubscribe(this.subscriptions);
             }
         }
         this.currentStatus = Status.CONNECTED;
@@ -46,13 +46,13 @@ public class State {
     }
 
     public List<String> subscribe(List<String> events) {
-        this.worker.getMessaging().subscribe( events );
+        this.worker.getMessaging().digestSubscribe(events);
         this.subscriptions.addAll( events );
         return this.subscriptions;
     }
 
     public List<String> unsubscribe(List<String> events) {
-        this.worker.getMessaging().unsubscribe(events);
+        this.worker.getMessaging().digestUnsubscribe(events);
         this.subscriptions.removeAll( events );
         return this.subscriptions;
     }
@@ -61,8 +61,8 @@ public class State {
         return this.currentStatus;
     }
 
-    public String[] getSubscriptions() {
-        return (String[])this.subscriptions.toArray();
+    public List<String> getSubscriptions() {
+        return this.subscriptions;
     }
 
     private void sendDigest() {

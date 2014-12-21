@@ -48,6 +48,11 @@ public class ProcessTest extends TestCase {
         Thread.sleep(3000);
         // unsubscribe
         assertTrue(this.supervisor.unsubscribe(this.config.getOverlayName(), this.subscriptions).equals(new ArrayList<String>()));
+        Thread.sleep(3000);
+        // disconnect:
+        supervisor.disconnect(this.config.getOverlayName());
+        Thread.sleep(1500);
+        assertEquals( this.supervisor.getNumberOfConnections(), 0 );
     }
 
     public void testNonExistingOverlay() throws Exception {

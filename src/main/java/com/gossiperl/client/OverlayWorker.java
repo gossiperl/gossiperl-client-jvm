@@ -48,7 +48,10 @@ public class OverlayWorker {
     }
 
     public void stop() {
-
+        if ( this.getMessaging().digestExit() ) {
+            this.working = false;
+            supervisor.disconnected( this.configuration );
+        }
     }
 
     public State getState() {

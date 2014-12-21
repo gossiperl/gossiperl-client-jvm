@@ -10,10 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class Supervisor {
 
@@ -44,7 +41,7 @@ public class Supervisor {
     }
 
     public void connect(OverlayConfiguration config, GossiperlClientListener listener) throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {
-        if (this.connections.containsKey(config.getOverlayName())) {
+        if (isConnection(config.getOverlayName())) {
             this.log.error("Client for " + config.getOverlayName() + " already present.");
             throw new GossiperlClientException("Client for " + config.getOverlayName() + " already present.");
         }
@@ -58,17 +55,20 @@ public class Supervisor {
     }
 
     public void disconnect(String overlayName) throws GossiperlClientException {
-        if (this.connections.containsKey(overlayName)) {
+        if (isConnection(overlayName)) {
             this.connections.get(overlayName).stop();
-            this.connections.remove(overlayName);
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
             throw new GossiperlClientException("[supervisor] No overlay connection: " + overlayName);
         }
     }
 
+    protected void disconnected(OverlayConfiguration config) {
+        this.connections.remove(config.getOverlayName());
+    }
+
     public List<String> subscribe(String overlayName, List<String> events) throws GossiperlClientException {
-        if (this.connections.containsKey(overlayName)) {
+        if (isConnection(overlayName)) {
             return this.connections.get(overlayName).getState().subscribe( events );
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
@@ -77,7 +77,7 @@ public class Supervisor {
     }
 
     public List<String> unsubscribe(String overlayName, List<String> events) throws GossiperlClientException {
-        if (this.connections.containsKey(overlayName)) {
+        if (isConnection(overlayName)) {
             return this.connections.get(overlayName).getState().unsubscribe(events);
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
@@ -86,7 +86,7 @@ public class Supervisor {
     }
 
     public State.Status getCurrentState(String overlayName) throws GossiperlClientException {
-        if (this.connections.containsKey(overlayName)) {
+        if (isConnection(overlayName)) {
             return this.connections.get(overlayName).getState().getCurrentState();
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
@@ -94,8 +94,8 @@ public class Supervisor {
         }
     }
 
-    public String[] getSubscriptions(String overlayName) throws GossiperlClientException {
-        if (this.connections.containsKey(overlayName)) {
+    public List<String> getSubscriptions(String overlayName) throws GossiperlClientException {
+        if (isConnection(overlayName)) {
             return this.connections.get(overlayName).getState().getSubscriptions();
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
@@ -103,8 +103,18 @@ public class Supervisor {
         }
     }
 
+    public int getNumberOfConnections() {
+        return this.connections.size();
+    }
+
+    public boolean isConnection(String overlayName) {
+        return this.connections.containsKey( overlayName );
+    }
+
     public void stop() {
-        // TODO: implement
+        for ( OverlayWorker worker : this.connections.values() ) {
+            worker.stop();
+        }
     }
 
     public static void main(String[] args) throws Exception {

@@ -51,57 +51,50 @@ public class Messaging {
         this.incomingQueue.offer(new DeserializeKillPill());
     }
 
-    public void digestAck(Digest digest) {
+    protected void digestAck(Digest digest) {
         DigestAck digestAck = new DigestAck();
         digestAck.setName( this.worker.getConfiguration().getClientName() );
         digestAck.setHeartbeat( Util.getTimestamp() );
         digestAck.setReply_id( digest.getId() );
         digestAck.setMembership(new ArrayList<DigestMember>());
-        try {
-            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digestAck));
-        } catch (GossiperlClientException ex) {
-            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestAck. Reason: ", ex);
-        }
+        send( digestAck );
     }
 
-    public void digestForwardedAck( String digestId ) {
+    protected void digestForwardedAck( String digestId ) {
         DigestForwardedAck ack = new DigestForwardedAck();
         ack.setReply_id( digestId );
         ack.setName( this.worker.getConfiguration().getClientName() );
         ack.setSecret(this.worker.getConfiguration().getClientSecret());
-        try {
-            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, ack));
-        } catch (GossiperlClientException ex) {
-            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestForwardedAck. Reason: ", ex);
-        }
+        send( ack );
     }
 
-    public void subscribe( List<String> events ) {
+    protected boolean digestExit() {
+        DigestExit digest = new DigestExit();
+        digest.setName( worker.getConfiguration().getClientName() );
+        digest.setSecret( worker.getConfiguration().getClientSecret() );
+        digest.setHeartbeat( Util.getTimestamp() );
+        send( digest );
+        return true;
+    }
+
+    protected void digestSubscribe(List<String> events) {
         DigestSubscribe digest = new DigestSubscribe();
         digest.setName(this.worker.getConfiguration().getClientName());
         digest.setSecret(this.worker.getConfiguration().getClientSecret());
         digest.setHeartbeat(Util.getTimestamp());
         digest.setId(UUID.randomUUID().toString());
         digest.setEvent_types( events );
-        try {
-            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digest));
-        } catch (GossiperlClientException ex) {
-            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestSubscribe. Reason: ", ex);
-        }
+        send( digest );
     }
 
-    public void unsubscribe( List<String> events ) {
+    protected void digestUnsubscribe(List<String> events) {
         DigestUnsubscribe digest = new DigestUnsubscribe();
         digest.setName(this.worker.getConfiguration().getClientName());
         digest.setSecret(this.worker.getConfiguration().getClientSecret());
         digest.setHeartbeat(Util.getTimestamp());
         digest.setId(UUID.randomUUID().toString());
         digest.setEvent_types( events );
-        try {
-            outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digest));
-        } catch (GossiperlClientException ex) {
-            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Received error when posting digestUnsubscribe. Reason: ", ex);
-        }
+        send( digest );
     }
 
     public void receive(DeserializeResult incoming) {
