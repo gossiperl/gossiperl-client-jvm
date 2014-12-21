@@ -47,6 +47,11 @@ public class Serializer {
         this.types.put(DIGEST_EVENT, com.gossiperl.client.thrift.DigestEvent.class);
     }
 
+    public TBase serializeArbitrary(HashMap<String, CustomDigestField> digestData) {
+        // TODO: implement
+        return null;
+    }
+
     public byte[] serialize(org.apache.thrift.TBase digest) throws GossiperlClientException,
             UnsupportedEncodingException {
         String digestType = this.getDigestName( digest );

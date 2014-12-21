@@ -3,6 +3,7 @@ package com.gossiperl.client.transport;
 import com.gossiperl.client.GossiperlClientException;
 import com.gossiperl.client.OverlayWorker;
 import com.gossiperl.client.encryption.Aes256;
+import com.gossiperl.client.serialization.CustomDigestField;
 import com.gossiperl.client.serialization.DeserializeResult;
 import com.gossiperl.client.serialization.DeserializeResultError;
 import com.gossiperl.client.serialization.Serializer;
@@ -20,6 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Udp implements Runnable {
 
@@ -77,6 +79,11 @@ public class Udp implements Runnable {
         } catch (SocketException ex) {
             LOG.error("[" + worker.getConfiguration().getClientName() + "] Could not bind client socket on port" + worker.getConfiguration().getClientPort() + ". Reason: ", ex);
         }
+    }
+
+    public void send(HashMap<String, CustomDigestField> digestData) {
+        TBase envelope = this.serializer.serializeArbitrary( digestData );
+        this.send( envelope );
     }
 
     public void send(TBase digest) {

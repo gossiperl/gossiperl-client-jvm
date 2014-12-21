@@ -9,6 +9,7 @@ import org.apache.thrift.TBase;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Messaging {
 
     public enum OutgoingDataType {
+        ARBITRARY,
         DIGEST,
         KILL_PILL
     }
@@ -109,11 +111,23 @@ public class Messaging {
         }
     }
 
+    public void send(HashMap<String, CustomDigestField> digest) {
+        try {
+            this.outgoingQueue.offer(new OutgoingData(OutgoingDataType.ARBITRARY, digest));
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Error while sending " + digest.getClass().getName() + ". Reason: ", ex);
+        }
+    }
+
     class OutgoingData {
         private OutgoingDataType type;
         private TBase digest;
+        private HashMap<String, CustomDigestField> arbitraryData;
         public OutgoingData( OutgoingDataType type ) throws GossiperlClientException {
-            this(type, null);
+            if (type != OutgoingDataType.KILL_PILL) {
+                throw new GossiperlClientException("Single argument constructor valid only for KILL_PILL.");
+            }
+            this.type = type;
         }
         public OutgoingData( OutgoingDataType type, TBase digest ) throws GossiperlClientException {
             this.type = type;
@@ -121,6 +135,16 @@ public class Messaging {
             if (this.digest == null && this.type == OutgoingDataType.DIGEST) {
                 throw new GossiperlClientException("Outgoing data digest without digest!");
             }
+        }
+        public OutgoingData( OutgoingDataType type, HashMap<String, CustomDigestField> digest ) throws GossiperlClientException {
+            this.type = type;
+            this.arbitraryData = digest;
+            if (this.digest == null && this.type == OutgoingDataType.ARBITRARY) {
+                throw new GossiperlClientException("Outgoing data digest without digest!");
+            }
+        }
+        public HashMap<String, CustomDigestField> getDigestData() {
+            return this.arbitraryData;
         }
         public TBase getDigest() {
             return this.digest;
@@ -139,7 +163,9 @@ public class Messaging {
                     if ( data.type == OutgoingDataType.DIGEST ) {
                         TBase digest = data.getDigest();
                         LOG.debug("[" + worker.getConfiguration().getClientName() + "] Processing offered digest of type: " + digest.getClass().getName());
-                        transport.send( digest );
+                        transport.send(digest);
+                    } else if ( data.type == OutgoingDataType.ARBITRARY ) {
+                        transport.send( data.getDigestData() );
                     } else if ( data.type == OutgoingDataType.KILL_PILL ) {
                         LOG.info("[" + worker.getConfiguration().getClientName() + "] Received request to stop outgoing queue processing. Stopping.");
                         break;

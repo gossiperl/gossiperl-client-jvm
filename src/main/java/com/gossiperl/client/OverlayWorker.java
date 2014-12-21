@@ -2,10 +2,12 @@ package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
 import com.gossiperl.client.listener.GossiperlClientListener;
+import com.gossiperl.client.serialization.CustomDigestField;
 import org.apache.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 
 public class OverlayWorker {
 
@@ -52,6 +54,10 @@ public class OverlayWorker {
             this.working = false;
             supervisor.disconnected( this.configuration );
         }
+    }
+
+    public void send(HashMap<String, CustomDigestField> digestData) {
+        messaging.send( digestData );
     }
 
     public State getState() {
