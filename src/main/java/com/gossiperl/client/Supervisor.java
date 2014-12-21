@@ -1,8 +1,10 @@
 package com.gossiperl.client;
 
 import com.gossiperl.client.config.OverlayConfiguration;
+import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.listener.DefaultGossiperlClientListener;
 import com.gossiperl.client.listener.GossiperlClientListener;
+import com.gossiperl.client.serialization.CustomDigestField;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -79,6 +81,15 @@ public class Supervisor {
     public List<String> unsubscribe(String overlayName, List<String> events) throws GossiperlClientException {
         if (isConnection(overlayName)) {
             return this.connections.get(overlayName).getState().unsubscribe(events);
+        } else {
+            this.log.error("[supervisor] No overlay connection: " + overlayName);
+            throw new GossiperlClientException("[supervisor] No overlay connection: " + overlayName);
+        }
+    }
+
+    public void send(String overlayName, String digestType, List<CustomDigestField> digestData) throws GossiperlClientException {
+        if (isConnection(overlayName)) {
+            this.connections.get(overlayName).send(digestType, digestData);
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
             throw new GossiperlClientException("[supervisor] No overlay connection: " + overlayName);
