@@ -14,7 +14,7 @@ public interface GossiperlClientListener {
     void subscribeAck( OverlayWorker worker, List<String> events );
     void unsubscribeAck( OverlayWorker worker, List<String> events );
     void forwardAck( OverlayWorker worker, String reply_id );
-    void forwarded( OverlayWorker worker, String digestType, TBase digest );
+    void forwarded( OverlayWorker worker, String digestType, byte[] binaryEnvelope, String envelopeId );
     void failed( OverlayWorker worker, GossiperlClientException error );
 
 }

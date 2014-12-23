@@ -49,8 +49,8 @@ public class DefaultGossiperlClientListener implements GossiperlClientListener {
         LOG.info("[" + worker.getConfiguration().getClientName() + "] Received confirmation of a forward message. Message ID: " + reply_id + ".");
     }
 
-    public void forwarded(OverlayWorker worker, String digestType, TBase digest) {
-        LOG.info("[" + worker.getConfiguration().getClientName() + "] Received forward digest " + digestType + ". Class of the digest: " + digest.getClass().getName() + ".");
+    public void forwarded(OverlayWorker worker, String digestType, byte[] binaryEnvelope, String envelopeId) {
+        LOG.info("[" + worker.getConfiguration().getClientName() + "] Received forward digest " + digestType + ". Digest id: " + envelopeId + ".");
     }
 
     public void failed(OverlayWorker worker, GossiperlClientException exception) {

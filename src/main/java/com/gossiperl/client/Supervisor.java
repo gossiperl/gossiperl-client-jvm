@@ -5,8 +5,11 @@ import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.listener.DefaultGossiperlClientListener;
 import com.gossiperl.client.listener.GossiperlClientListener;
 import com.gossiperl.client.serialization.CustomDigestField;
+import com.gossiperl.client.serialization.DeserializeResult;
+import com.gossiperl.client.serialization.Serializer;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.thrift.TException;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,6 +96,17 @@ public class Supervisor {
         } else {
             this.log.error("[supervisor] No overlay connection: " + overlayName);
             throw new GossiperlClientException("[supervisor] No overlay connection: " + overlayName);
+        }
+    }
+
+    public DeserializeResult read( String digestType, byte[] binDigest, List<CustomDigestField> digestInfo )
+            throws GossiperlClientException {
+        try {
+            return (new Serializer()).deserializeArbitrary(digestType, binDigest, digestInfo);
+        } catch (TException ex) {
+            throw new GossiperlClientException("Error while deserializing Thrift data.", ex);
+        } catch (UnsupportedEncodingException ex) {
+            throw new GossiperlClientException("Error while deserializing Thrift data.", ex);
         }
     }
 
