@@ -85,7 +85,7 @@ public class Udp implements Runnable {
 
     public void send(String digestType, List<CustomDigestField> digestData) {
         try {
-            TBase envelope = this.serializer.serializeArbitrary(digestType, digestData);
+            byte[] envelope = this.serializer.serializeArbitrary(digestType, digestData);
             this.send(envelope);
         } catch (TException ex) {
             worker.getListener().failed(worker, new GossiperlClientException("Error while serializing custom digest.", ex));
@@ -99,8 +99,19 @@ public class Udp implements Runnable {
             LOG.debug("[" + worker.getConfiguration().getClientName() + "] Attempting sending " + digest.getClass().getName() + " to 127.0.0.1:" + this.worker.getConfiguration().getOverlayPort() + ".");
             byte[] serialized = this.serializer.serialize(digest);
             byte[] encrypted = this.encryption.encrypt(serialized);
-            DatagramPacket sendPacket = new DatagramPacket(encrypted,
-                    encrypted.length,
+            this.send( encrypted );
+            LOG.debug("[" + worker.getConfiguration().getClientName() + "] Digest of type " + digest.getClass().getName() + " sent to 127.0.0.1:" + this.worker.getConfiguration().getOverlayPort() + ".");
+        } catch (GossiperlClientException ex) {
+            LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while serializing Thrift data. Reason: ", ex);
+        } catch (Exception ex) {
+            LOG.error("[" + worker.getConfiguration().getClientName() + "] Security exception. Reason: ", ex);
+        }
+    }
+
+    public void send(byte[] digest) {
+        try {
+            DatagramPacket sendPacket = new DatagramPacket(digest,
+                    digest.length,
                     InetAddress.getByName(IP_ADDRESS),
                     this.worker.getConfiguration().getOverlayPort());
             this.socket.send(sendPacket);
@@ -109,12 +120,8 @@ public class Udp implements Runnable {
             LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while sending data to " + IP_ADDRESS + ". Reason: ", ex);
         } catch (IOException ex) {
             LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while writing data to the UDP datagram. Reason: ", ex);
-        } catch (GossiperlClientException ex) {
-            LOG.error("[" + worker.getConfiguration().getClientName() + "] Error while serializing Thrift data. Reason: ", ex);
         } catch (NullPointerException ex) {
             LOG.error("[" + worker.getConfiguration().getClientName() + "] Socket not initialized. Did you start the thread? Reason: ", ex);
-        } catch (Exception ex) {
-            LOG.error("[" + worker.getConfiguration().getClientName() + "] Security exception. Reason: ", ex);
         }
     }
 

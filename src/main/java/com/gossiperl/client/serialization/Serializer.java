@@ -7,9 +7,13 @@ import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.*;
+import org.apache.thrift.transport.TIOStreamTransport;
+import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TMemoryInputTransport;
 import org.apache.thrift.transport.TTransport;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
@@ -69,8 +73,14 @@ public class Serializer {
         return serializableTypes.containsKey(type);
     }
 
-    public TBase serializeArbitrary(String digestType, List<CustomDigestField> digestData) throws TException, GossiperlClientException {
-        TTransport transport = new TMemoryInputTransport();
+    public byte[] serializeArbitrary(String digestType, List<CustomDigestField> digestData) throws TException, GossiperlClientException {
+        return this.serializeArbitrary( digestType, digestData, 1024 );
+    }
+
+    public byte[] serializeArbitrary(String digestType, List<CustomDigestField> digestData, int thriftWindowSize)
+            throws TException, GossiperlClientException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream( thriftWindowSize );
+        TTransport transport = new TIOStreamTransport( stream );
         TProtocol  protocol  = new TBinaryProtocol(transport);
         protocol.writeStructBegin(new TStruct( digestType ));
         for (CustomDigestField field : digestData) {
@@ -125,9 +135,9 @@ public class Serializer {
         protocol.writeStructEnd();
         DigestEnvelope envelope = new DigestEnvelope();
         envelope.setPayload_type( digestType );
-        envelope.setBin_payload(Base64.encode( protocol.getTransport().getBuffer() ));
+        envelope.setBin_payload(Base64.encode( stream.toByteArray() ));
         envelope.setId(UUID.randomUUID().toString());
-        return envelope;
+        return digestToBinary( envelope );
     }
 
     public byte[] serialize(org.apache.thrift.TBase digest) throws GossiperlClientException,
@@ -143,6 +153,53 @@ public class Serializer {
         return digestToBinary( envelope );
     }
 
+    public DeserializeResult deserializeArbitrary(String digestType, byte[] binDigest, List<CustomDigestField> digestInfo)
+            throws GossiperlClientException, UnsupportedEncodingException, TException {
+        DigestEnvelope envelope = (DigestEnvelope)digestFromBinary( DIGEST_ENVELOPE, binDigest );
+
+        byte[] digest = Base64.decode(envelope.getBin_payload());
+        TTransport transport = new TIOStreamTransport(new ByteArrayInputStream( digest ));
+        TBinaryProtocol protocol = new TBinaryProtocol( transport );
+        protocol.readStructBegin();
+        HashMap< String, Object > result = new HashMap<String, Object>();
+        for (int i=0; i<digestInfo.size(); i++) {
+            TField thriftFieldInfo = protocol.readFieldBegin();
+            CustomDigestField digestField = getFidData( thriftFieldInfo.id, digestInfo );
+            if ( digestField != null ) {
+                if ( Serializer.isSerializableType( digestField.getType() ) ) {
+                    if ( Serializer.serializableTypes.get( digestField.getType() ).byteValue() == thriftFieldInfo.type ) {
+                        if ( thriftFieldInfo.type == TType.STRING ) {
+                            result.put( digestField.getFieldName(), protocol.readString() );
+                        } else if ( thriftFieldInfo.type == TType.BOOL ) {
+                            result.put( digestField.getFieldName(), new Boolean( protocol.readBool() ) );
+                        } else if ( thriftFieldInfo.type == TType.BYTE ) {
+                            result.put( digestField.getFieldName(), new Byte( protocol.readByte() ) );
+                        } else if ( thriftFieldInfo.type == TType.DOUBLE ) {
+                            result.put( digestField.getFieldName(), new Double( protocol.readDouble() ) );
+                        } else if ( thriftFieldInfo.type == TType.I16 ) {
+                            result.put( digestField.getFieldName(), new Long( protocol.readI16() ) );
+                        } else if ( thriftFieldInfo.type == TType.I32 ) {
+                            result.put( digestField.getFieldName(), new Long( protocol.readI32() ) );
+                        } else if ( thriftFieldInfo.type == TType.I64 ) {
+                            result.put( digestField.getFieldName(), new Long( protocol.readI64() ) );
+                        } else {
+                            TProtocolUtil.skip(protocol, thriftFieldInfo.type);
+                        }
+                    } else {
+                        TProtocolUtil.skip(protocol, thriftFieldInfo.type);
+                    }
+                } else {
+                    TProtocolUtil.skip(protocol, thriftFieldInfo.type);
+                }
+            } else {
+                TProtocolUtil.skip(protocol, thriftFieldInfo.type);
+            }
+            protocol.readFieldEnd();
+        }
+        protocol.readStructEnd();
+        return new DeserializeResultCustomOK( digestType, result );
+    }
+
     public DeserializeResult deserialize(byte[] binDigest) throws GossiperlClientException,
             UnsupportedEncodingException {
         DigestEnvelope envelope = (DigestEnvelope)digestFromBinary( DIGEST_ENVELOPE, binDigest );
@@ -154,7 +211,7 @@ public class Serializer {
                 return new DeserializeResultError(ex);
             }
         } else {
-            return new DeserializeResultForward( envelope.getPayload_type(), envelope );
+            return new DeserializeResultForward( envelope.getPayload_type(), binDigest, envelope.getId() );
         }
     }
 
@@ -162,6 +219,7 @@ public class Serializer {
         try {
             return (new TSerializer()).serialize(digest);
         } catch (TException ex) {
+            ex.printStackTrace();
             throw new GossiperlClientException("Could not write Thrift digest.", ex);
         }
     }
@@ -192,6 +250,16 @@ public class Serializer {
         String clsName = digest.getClass().getName();
         clsName = clsName.substring( clsName.lastIndexOf(".")+1, clsName.length() );
         return clsName.substring(0,1).toLowerCase() + clsName.substring(1, clsName.length());
+    }
+
+    private CustomDigestField getFidData( int fieldId, List<CustomDigestField> digestInfo ) {
+        for ( int i=0; i<digestInfo.size(); i++ ) {
+            CustomDigestField field = digestInfo.get( i );
+            if (field.getFieldOrder() == fieldId) {
+                return field;
+            }
+        }
+        return null;
     }
 
 }

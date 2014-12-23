@@ -32,11 +32,6 @@ public class ThriftTest extends TestCase {
     public void testSerializeDeserialize() throws Exception {
         Serializer serializer = new Serializer();
         byte[] envelope = serializer.serialize( this.digest );
-
-        //FileOutputStream out1 = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/unencrypted-thrift-data.thrift");
-        //out1.write(envelope);
-        //out1.close();
-
         DeserializeResult deserializedResult = serializer.deserialize( envelope );
         assertEquals( DeserializeResultOK.class, deserializedResult.getClass() );
         DeserializeResultOK resultOk = (DeserializeResultOK)deserializedResult;
@@ -54,11 +49,6 @@ public class ThriftTest extends TestCase {
         byte[] envelope = serializer.serialize( this.digest );
         // encrypt:
         byte[] encryptedEnvelope = aes.encrypt(envelope);
-
-        //FileOutputStream out2 = new FileOutputStream("/Users/rad/dev/my/gossiperl-client-jvm/encrypted-thrift-data.thrift");
-        //out2.write(encryptedEnvelope);
-        //out2.close();
-
         // decrypt:
         byte[] decryptedEnvelope = aes.decrypt(encryptedEnvelope);
         // deserialize:

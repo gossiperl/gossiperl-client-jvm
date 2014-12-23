@@ -93,7 +93,15 @@ Other Thrift types are not supported. `CustomDigestField`s constructor is:
 
     CustomDigestField(String fieldName, Object value, String type, short fieldOrder)
 
-Where `fieldOrder` is a Thrift field order.
+Where `fieldOrder` is a Thrift field ID.
+
+### Reading custom digests
+
+To read a custom digest, assuming that this is the binary envelope data received via `forwarded` listener, it can be read in the following manner:
+
+    supervisor.read("expectedDigestType", binaryData, digestInfo);
+
+Where binary data is `byte[]` buffer of the notification and `digestInfo` has the same format as `digestData` as in the example above.
 
 ## Running tests
 

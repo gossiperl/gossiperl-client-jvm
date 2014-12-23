@@ -223,7 +223,7 @@ public class Messaging {
                         worker.getListener().failed(worker, ((DeserializeResultError) result).getCause());
                     } else if ( result instanceof DeserializeResultForward ) {
                         DeserializeResultForward event = (DeserializeResultForward)result;
-                        worker.getListener().forwarded( worker, event.getDigestType(), event.getDigest() );
+                        worker.getListener().forwarded( worker, event.getDigestType(), event.getBinaryEnvelope(), event.getEnvelopeId() );
                         digestForwardedAck(event.getEnvelopeId());
                     } else if (result instanceof DeserializeKillPill) {
                         LOG.info("[" + worker.getConfiguration().getClientName() + "] Received request to stop incoming queue processing. Stopping.");
