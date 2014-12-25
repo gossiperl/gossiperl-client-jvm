@@ -105,7 +105,7 @@ public class Messaging {
 
     public void send(TBase digest) {
         try {
-            this.outgoingQueue.offer(new OutgoingData(OutgoingDataType.DIGEST, digest));
+            this.outgoingQueue.offer(new OutgoingData(digest));
         } catch (GossiperlClientException ex) {
             LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Error while sending " + digest.getClass().getName() + ". Reason: ", ex);
         }
@@ -113,7 +113,7 @@ public class Messaging {
 
     public void send(String digestType, List<CustomDigestField> digest) {
         try {
-            this.outgoingQueue.offer(new OutgoingData(OutgoingDataType.ARBITRARY, digestType, digest));
+            this.outgoingQueue.offer(new OutgoingData(digestType, digest));
         } catch (GossiperlClientException ex) {
             LOG.error("[" + this.worker.getConfiguration().getClientName() + "] Error while sending " + digest.getClass().getName() + ". Reason: ", ex);
         }
@@ -130,15 +130,15 @@ public class Messaging {
             }
             this.type = type;
         }
-        public OutgoingData( OutgoingDataType type, TBase digest ) throws GossiperlClientException {
-            this.type = type;
+        public OutgoingData( TBase digest ) throws GossiperlClientException {
+            this.type = OutgoingDataType.DIGEST;
             this.digest = digest;
             if (this.digest == null && this.type == OutgoingDataType.DIGEST) {
                 throw new GossiperlClientException("Outgoing data digest without digest!");
             }
         }
-        public OutgoingData( OutgoingDataType type, String digestType, List<CustomDigestField> digest ) throws GossiperlClientException {
-            this.type = type;
+        public OutgoingData( String digestType, List<CustomDigestField> digest ) throws GossiperlClientException {
+            this.type = OutgoingDataType.ARBITRARY;
             this.arbitraryType = digestType;
             this.arbitraryData = digest;
             if (this.digest == null && this.type == OutgoingDataType.ARBITRARY) {
