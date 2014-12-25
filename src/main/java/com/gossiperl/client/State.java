@@ -84,7 +84,9 @@ public class State {
                     sendDigest();
                     if ( Util.getTimestamp() - lastTs > 5f ) {
                         LOG.debug("[" + worker.getConfiguration().getClientName() + "] Announcing disconnected.");
-                        worker.getListener().disconnected(worker);
+                        if (currentStatus == Status.CONNECTED) {
+                            worker.getListener().disconnected(worker);
+                        }
                         currentStatus = Status.DISCONNECTED;
                     }
                     try {
