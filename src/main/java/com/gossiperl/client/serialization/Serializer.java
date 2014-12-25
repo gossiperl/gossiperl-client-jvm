@@ -8,7 +8,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.*;
 import org.apache.thrift.transport.TIOStreamTransport;
-import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TMemoryInputTransport;
 import org.apache.thrift.transport.TTransport;
 
@@ -219,7 +218,6 @@ public class Serializer {
         try {
             return (new TSerializer()).serialize(digest);
         } catch (TException ex) {
-            ex.printStackTrace();
             throw new GossiperlClientException("Could not write Thrift digest.", ex);
         }
     }
@@ -238,7 +236,6 @@ public class Serializer {
             } catch (IllegalAccessException ex) {
                 throw new GossiperlClientException("Could not load Thrift digest class.", ex);
             } catch (TException ex) {
-                ex.printStackTrace();
                 throw new GossiperlClientException("Could not read Thrift digest.", ex);
             }
         } else {
