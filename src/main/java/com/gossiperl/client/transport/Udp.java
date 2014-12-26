@@ -85,12 +85,15 @@ public class Udp implements Runnable {
 
     public void send(String digestType, List<CustomDigestField> digestData) {
         try {
-            byte[] envelope = this.serializer.serializeArbitrary(digestType, digestData);
-            this.send(envelope);
+            byte[] serialized = this.serializer.serializeArbitrary(digestType, digestData);
+            byte[] encrypted = this.encryption.encrypt(serialized);
+            this.send(encrypted);
         } catch (TException ex) {
             worker.getListener().failed(worker, new GossiperlClientException("Error while serializing custom digest.", ex));
         } catch (GossiperlClientException ex) {
             worker.getListener().failed(worker, ex);
+        } catch (Exception ex) {
+            LOG.error("[" + worker.getConfiguration().getClientName() + "] Security exception. Reason: ", ex);
         }
     }
 
