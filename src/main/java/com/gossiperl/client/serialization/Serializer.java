@@ -22,8 +22,6 @@ public class Serializer {
 
     private HashMap<String, Class> types = new HashMap<String, Class>();
 
-    private static HashMap<String, Byte> serializableTypes = new HashMap<String, Byte>();
-
     public static final String DIGEST_ERROR = "digestError";
     public static final String DIGEST_FORWARDED_ACK = "digestForwardedAck";
     public static final String DIGEST_ENVELOPE = "digestEnvelope";
@@ -38,7 +36,6 @@ public class Serializer {
     public static final String DIGEST_EVENT = "digestEvent";
 
     public Serializer() {
-        ensureSerializableTypes();
         this.types.put(DIGEST_ERROR, com.gossiperl.client.thrift.DigestError.class);
         this.types.put(DIGEST_FORWARDED_ACK, com.gossiperl.client.thrift.DigestForwardedAck.class);
         this.types.put(DIGEST_ENVELOPE, com.gossiperl.client.thrift.DigestEnvelope.class);
@@ -55,23 +52,6 @@ public class Serializer {
 
     }
 
-    private static void ensureSerializableTypes() {
-        if (serializableTypes.size() == 0) {
-            serializableTypes.put( "string", TType.STRING );
-            serializableTypes.put( "bool", TType.BOOL );
-            serializableTypes.put( "byte", TType.BYTE );
-            serializableTypes.put( "double", TType.DOUBLE );
-            serializableTypes.put( "i16", TType.I16 );
-            serializableTypes.put( "i32", TType.I32 );
-            serializableTypes.put( "i64", TType.I64 );
-        }
-    }
-
-    public static boolean isSerializableType(String type) {
-        ensureSerializableTypes();
-        return serializableTypes.containsKey(type);
-    }
-
     public byte[] serializeArbitrary(String digestType, List<CustomDigestField> digestData) throws TException, GossiperlClientException {
         return this.serializeArbitrary( digestType, digestData, 1024 );
     }
@@ -83,45 +63,44 @@ public class Serializer {
         TProtocol  protocol  = new TBinaryProtocol(transport);
         protocol.writeStructBegin(new TStruct( digestType ));
         for (CustomDigestField field : digestData) {
-            byte fieldType = serializableTypes.get(field.getType());
-            protocol.writeFieldBegin( new TField( field.getFieldName(), fieldType, field.getFieldOrder() ));
-            if ( fieldType == TType.BOOL ) {
+            protocol.writeFieldBegin( new TField( field.getFieldName(), field.getType(), field.getFieldOrder() ));
+            if ( field.getType() == TType.BOOL ) {
                 try {
                     protocol.writeBool( ((Boolean)field.getValue()).booleanValue() );
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as BOOL.", ex);
                 }
-            } else if ( fieldType == TType.BYTE ) {
+            } else if ( field.getType() == TType.BYTE ) {
                 try {
                     protocol.writeByte(((Byte) field.getValue()).byteValue());
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as BYTE.", ex);
                 }
-            } else if ( fieldType == TType.DOUBLE ) {
+            } else if ( field.getType() == TType.DOUBLE ) {
                 try {
                     protocol.writeDouble(((Double) field.getValue()).doubleValue());
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as DOUBLE.", ex);
                 }
-            } else if ( fieldType == TType.I16 ) {
+            } else if ( field.getType() == TType.I16 ) {
                 try {
                     protocol.writeI16(((Long) field.getValue()).shortValue());
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as I16.", ex);
                 }
-            } else if ( fieldType == TType.I32 ) {
+            } else if ( field.getType() == TType.I32 ) {
                 try {
                     protocol.writeI32(((Long) field.getValue()).intValue());
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as I32.", ex);
                 }
-            } else if ( fieldType == TType.I64 ) {
+            } else if ( field.getType() == TType.I64 ) {
                 try {
                     protocol.writeI64(((Long)field.getValue()).longValue());
                 } catch (Exception ex) {
                     throw new GossiperlClientException("Failed to write value " + field.getValue().toString() + " as I64.", ex);
                 }
-            } else if ( fieldType == TType.STRING ) {
+            } else if ( field.getType() == TType.STRING ) {
                 try {
                     protocol.writeString((String) field.getValue());
                 } catch (Exception ex) {
@@ -165,25 +144,21 @@ public class Serializer {
             TField thriftFieldInfo = protocol.readFieldBegin();
             CustomDigestField digestField = getFidData( thriftFieldInfo.id, digestInfo );
             if ( digestField != null ) {
-                if ( Serializer.isSerializableType( digestField.getType() ) ) {
-                    if ( Serializer.serializableTypes.get( digestField.getType() ).byteValue() == thriftFieldInfo.type ) {
-                        if ( thriftFieldInfo.type == TType.STRING ) {
-                            result.put( digestField.getFieldName(), protocol.readString() );
-                        } else if ( thriftFieldInfo.type == TType.BOOL ) {
-                            result.put( digestField.getFieldName(), new Boolean( protocol.readBool() ) );
-                        } else if ( thriftFieldInfo.type == TType.BYTE ) {
-                            result.put( digestField.getFieldName(), new Byte( protocol.readByte() ) );
-                        } else if ( thriftFieldInfo.type == TType.DOUBLE ) {
-                            result.put( digestField.getFieldName(), new Double( protocol.readDouble() ) );
-                        } else if ( thriftFieldInfo.type == TType.I16 ) {
-                            result.put( digestField.getFieldName(), new Long( protocol.readI16() ) );
-                        } else if ( thriftFieldInfo.type == TType.I32 ) {
-                            result.put( digestField.getFieldName(), new Long( protocol.readI32() ) );
-                        } else if ( thriftFieldInfo.type == TType.I64 ) {
-                            result.put( digestField.getFieldName(), new Long( protocol.readI64() ) );
-                        } else {
-                            TProtocolUtil.skip(protocol, thriftFieldInfo.type);
-                        }
+                if ( digestField.getType() == thriftFieldInfo.type ) {
+                    if ( thriftFieldInfo.type == TType.STRING ) {
+                        result.put( digestField.getFieldName(), protocol.readString() );
+                    } else if ( thriftFieldInfo.type == TType.BOOL ) {
+                        result.put( digestField.getFieldName(), new Boolean( protocol.readBool() ) );
+                    } else if ( thriftFieldInfo.type == TType.BYTE ) {
+                        result.put( digestField.getFieldName(), new Byte( protocol.readByte() ) );
+                    } else if ( thriftFieldInfo.type == TType.DOUBLE ) {
+                        result.put( digestField.getFieldName(), new Double( protocol.readDouble() ) );
+                    } else if ( thriftFieldInfo.type == TType.I16 ) {
+                        result.put( digestField.getFieldName(), new Long( protocol.readI16() ) );
+                    } else if ( thriftFieldInfo.type == TType.I32 ) {
+                        result.put( digestField.getFieldName(), new Long( protocol.readI32() ) );
+                    } else if ( thriftFieldInfo.type == TType.I64 ) {
+                        result.put( digestField.getFieldName(), new Long( protocol.readI64() ) );
                     } else {
                         TProtocolUtil.skip(protocol, thriftFieldInfo.type);
                     }
