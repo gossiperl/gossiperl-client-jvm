@@ -77,23 +77,9 @@ Unsubscribing:
     
     String overlayName = "gossiper_overlay_remote";
     ArrayList<CustomDigestField> digestData = new ArrayList<CustomDigestField>();
-    digestData.put(new CustomDigestField("field_name", "some value for the field", "string", 1));
-    digestData.put(new CustomDigestField("integer_field", 1234, "i32", 2));
+    digestData.put(new CustomDigestField("field_name", "some value for the field", 1));
+    digestData.put(new CustomDigestField("integer_field", 1234, 2));
     supervisor.send( overlayName )
-
-Where `<type>` is one of the supported serializable types:
-
-- `string`: `java.lang.String`
-- `bool`: `java.lang.Boolean`
-- `byte`: `java.lang.Byte`
-- `double`: `java.lang.Double`
-- `i16`: `java.lang.Long`
-- `i32`: `java.lang.Long`
-- `i64`: `java.lang.Long`
-
-Other Thrift types are not supported. `CustomDigestField`s constructor is:
-
-    CustomDigestField(String fieldName, Object value, String type, short fieldOrder)
 
 Where `fieldOrder` is a Thrift field ID.
 

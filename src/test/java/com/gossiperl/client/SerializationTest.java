@@ -18,8 +18,8 @@ public class SerializationTest extends TestCase {
         this.digestType = "someDigestType";
         this.digestInfo = new ArrayList<CustomDigestField>();
         try {
-            this.digestInfo.add(new CustomDigestField("some_property", "this is some string value to test", "string", 1));
-            this.digestInfo.add(new CustomDigestField("some_other_property", new Long(1234), "i32", 2));
+            this.digestInfo.add(new CustomDigestField("some_property", "this is some string value to test", 1));
+            this.digestInfo.add(new CustomDigestField("some_other_property", 1234L, 2));
         } catch (Exception ex) {
             System.out.println("[Serialization test]: Error in set up.");
             ex.printStackTrace();
