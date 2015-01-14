@@ -44,7 +44,7 @@ public class Udp implements Runnable {
     public void run() {
         try {
             this.socket = new DatagramSocket( this.worker.getConfiguration().getClientPort() );
-            byte[] buffer = new byte[ this.worker.getConfiguration().getThriftWindowSize() ];
+            byte[] buffer = new byte[ 1024 ];
             LOG.info("[" + worker.getConfiguration().getClientName() + "] Datagram server started on port " + this.worker.getConfiguration().getClientPort() + ".");
             while (this.worker.isWorking()) {
                 DatagramPacket received = new DatagramPacket(buffer, buffer.length);
