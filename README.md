@@ -1,12 +1,12 @@
 # JVM Gossiperl client
 
-JVM [gossiperl](https://github.com/radekg/gossiperl) client library.
+JVM [gossiperl](http://gossiperl.com) client library.
 
 ## Installation
 
 The JVM client is not currently available in Maven. To build from sources an installation of Java and Maven 3 is required. The code should build with Java 6. To build:
 
-    git clone https://github.com/radekg/gossiperl-client-jvm.git
+    git clone https://github.com/gossiperl/gossiperl-client-jvm.git
     cd gossiperl-client-jvm/
     git tags -l
     git checkout v0.1
