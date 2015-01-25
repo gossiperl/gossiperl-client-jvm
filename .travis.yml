@@ -3,6 +3,8 @@ langiage: java
 jdk:
   - openjdk6
 
+sudo: true
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install curl jq screen openssl
@@ -16,3 +18,6 @@ before_install:
   - cd ../..
   - chmod +x .gossiperl-daemon/test/run-for-unit-tests.sh
   - ./.gossiperl-daemon/test/run-for-unit-tests.sh
+
+notifications:
+  email: false
