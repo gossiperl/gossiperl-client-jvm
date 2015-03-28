@@ -8,12 +8,9 @@ sudo: true
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install wget curl jq maven
-  - CORRECT_DIR=$(pwd)
-  - mkdir -p /opt/gossiperl-core && cd /opt/gossiperl-core
-  - git clone https://github.com/gossiperl/gossiperl-core-jvm.git .
-  - git checkout $(git tag -l | sort -r | head -n 1)
-  - mvn clean install
-  - cd $CORRECT_DIR
+  - wget https://github.com/gossiperl/gossiperl-core-jvm/releases/download/1.0.0/gossiperl-core-1.0.0.jar
+  - mvn install:install-file -Dfile=gossiperl-core-1.0.0.jar
+  - rm -Rf gossiperl-core-1.0.0.jar
   - wget https://github.com/gossiperl/gossiperl/releases/download/1.3.1/gossiperl-1.3.1_all.deb
   - sudo dpkg -i gossiperl-1.3.1_all.deb
   - sudo /etc/gossiperl/start-and-wait.sh
