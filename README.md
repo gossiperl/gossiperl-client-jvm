@@ -8,8 +8,7 @@ The JVM client is not currently available in Maven. To build from sources an ins
 
     git clone https://github.com/gossiperl/gossiperl-client-jvm.git
     cd gossiperl-client-jvm/
-    git tags -l
-    git checkout v0.1
+    git checkout $(git tag -l | sort -r | head -n 1)
     mvn clean install
 
 If you don’t have an installation of `gossiperl` running on the box where the client is built, you will have to skip tests:
