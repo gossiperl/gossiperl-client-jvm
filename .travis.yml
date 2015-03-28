@@ -6,7 +6,7 @@ jdk:
 sudo: true
 
 before_install:
-  - sudo apt-get update -qq
+  - sudo apt-get update
   - sudo apt-get install wget curl jq maven
   - wget https://github.com/gossiperl/gossiperl-core-jvm/releases/download/1.0.0/gossiperl-core-1.0.0.jar
   - mvn install:install-file -Dfile=gossiperl-core-1.0.0.jar
