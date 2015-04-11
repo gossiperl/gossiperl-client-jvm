@@ -3,7 +3,8 @@ package com.gossiperl.client;
 import com.gossiperl.client.config.OverlayConfiguration;
 import com.gossiperl.client.listener.GossiperlClientListener;
 import com.gossiperl.client.serialization.CustomDigestField;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +20,7 @@ public class OverlayWorker {
     private boolean working;
     private GossiperlClientListener listener;
 
-    private static Logger LOG = Logger.getLogger(OverlayWorker.class);
+    private static Logger LOG = LoggerFactory.getLogger(OverlayWorker.class);
 
     public OverlayWorker(Supervisor supervisor, OverlayConfiguration configuration, GossiperlClientListener listener) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         this.supervisor = supervisor;

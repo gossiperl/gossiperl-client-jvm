@@ -2,14 +2,14 @@ package com.gossiperl.client.listener;
 
 import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.OverlayWorker;
-import org.apache.log4j.Logger;
-import org.apache.thrift.TBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class DefaultGossiperlClientListener implements GossiperlClientListener {
 
-    private static Logger LOG = Logger.getLogger(DefaultGossiperlClientListener.class);
+    private static Logger LOG = LoggerFactory.getLogger(DefaultGossiperlClientListener.class);
 
     public void connected(OverlayWorker worker) {
         LOG.info("[" + worker.getConfiguration().getClientName() + "] Connected.");
