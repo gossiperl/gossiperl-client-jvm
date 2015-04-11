@@ -7,9 +7,10 @@ import com.gossiperl.client.serialization.CustomDigestField;
 import com.gossiperl.client.serialization.DeserializeResult;
 import com.gossiperl.client.serialization.DeserializeResultError;
 import com.gossiperl.client.serialization.Serializer;
-import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,7 +33,7 @@ public class Udp implements Runnable {
     private Serializer serializer;
     private Aes256 encryption;
 
-    private static Logger LOG = Logger.getLogger(Udp.class);
+    private static Logger LOG = LoggerFactory.getLogger(Udp.class);
     private static String IP_ADDRESS = "127.0.0.1";
 
     public Udp(OverlayWorker worker) throws NoSuchAlgorithmException, UnsupportedEncodingException {

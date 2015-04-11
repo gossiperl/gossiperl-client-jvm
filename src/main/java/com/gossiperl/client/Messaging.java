@@ -4,8 +4,9 @@ import com.gossiperl.client.exceptions.GossiperlClientException;
 import com.gossiperl.client.serialization.*;
 import com.gossiperl.client.thrift.*;
 import com.gossiperl.client.transport.Udp;
-import org.apache.log4j.Logger;
 import org.apache.thrift.TBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +29,7 @@ public class Messaging {
     private LinkedBlockingQueue<DeserializeResult> incomingQueue;
     private LinkedBlockingQueue<OutgoingData> outgoingQueue;
 
-    private static Logger LOG = Logger.getLogger(Messaging.class);
+    private static Logger LOG = LoggerFactory.getLogger(Messaging.class);
 
     public Messaging(OverlayWorker worker) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         this.worker = worker;

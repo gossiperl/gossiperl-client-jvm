@@ -1,8 +1,5 @@
 package com.gossiperl.client.config;
 
-/**
- * Created by rad on 16/12/14.
- */
 public class OverlayConfiguration {
 
     private String overlayName;
@@ -11,7 +8,6 @@ public class OverlayConfiguration {
     private String symmetricKey;
     private int overlayPort;
     private int clientPort;
-    private String log4jConfiguration = null;
 
     public String getOverlayName() {
         return overlayName;
@@ -59,14 +55,6 @@ public class OverlayConfiguration {
 
     public void setClientPort(int clientPort) {
         this.clientPort = clientPort;
-    }
-
-    public String getLog4jConfiguration() {
-        return log4jConfiguration;
-    }
-
-    public void setLog4jConfiguration(String log4jConfiguration) {
-        this.log4jConfiguration = log4jConfiguration;
     }
 
 }

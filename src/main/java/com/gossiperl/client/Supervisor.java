@@ -7,12 +7,10 @@ import com.gossiperl.client.listener.GossiperlClientListener;
 import com.gossiperl.client.serialization.CustomDigestField;
 import com.gossiperl.client.serialization.DeserializeResult;
 import com.gossiperl.client.serialization.Serializer;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -20,29 +18,10 @@ import java.util.*;
 public class Supervisor {
 
     private HashMap<String, OverlayWorker> connections;
-    private Logger log;
-
-    public Supervisor(String log4jProperties) {
-        this.connections = new HashMap<String, OverlayWorker>();
-        Properties props = new Properties();
-        if (log4jProperties == null) {
-            try {
-                props.load(getClass().getResourceAsStream("/log4j.properties"));
-                PropertyConfigurator.configure(props);
-            } catch (IOException ex) {
-                System.out.println( "There was an error while loading log4j.properties from the JAR." );
-                ex.printStackTrace();
-                System.exit(100);
-            }
-        } else {
-            String log4jConfigPath = new File( log4jProperties ).getAbsolutePath();
-            PropertyConfigurator.configureAndWatch(log4jConfigPath, 10 * 1000);
-        }
-        this.log = Logger.getLogger( Supervisor.class );
-    }
+    private Logger log = LoggerFactory.getLogger( Supervisor.class );
 
     public Supervisor() {
-        this(null);
+        this.connections = new HashMap<String, OverlayWorker>();
     }
 
     public void connect(OverlayConfiguration config, GossiperlClientListener listener) throws GossiperlClientException, NoSuchAlgorithmException, UnsupportedEncodingException {

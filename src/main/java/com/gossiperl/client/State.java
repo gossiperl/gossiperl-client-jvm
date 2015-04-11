@@ -2,7 +2,8 @@ package com.gossiperl.client;
 
 import com.gossiperl.client.thrift.Digest;
 import com.gossiperl.client.thrift.DigestAck;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class State {
     private Status currentStatus;
     private long lastTs;
 
-    private static Logger LOG = Logger.getLogger(State.class);
+    private static Logger LOG = LoggerFactory.getLogger(State.class);
 
     public State(OverlayWorker worker) {
         this.subscriptions = new ArrayList<String>();
